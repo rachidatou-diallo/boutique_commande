@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ produit.nom }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-box me-2"></i>{{ produit.nom }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ path('app_produit_edit', {'id': produit.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil me-2"></i>Modifier
+            </a>
+            <a href="{{ path('app_produit_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations du produit</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nom :</dt>
+                    <dd class="col-sm-9">{{ produit.nom }}</dd>
+                    
+                    <dt class="col-sm-3">Catégorie :</dt>
+                    <dd class="col-sm-9">
+                        <a href="{{ path('app_categorie_show', {'id': produit.categorie.id}) }}" class="badge bg-info text-decoration-none">
+                            {{ produit.categorie.nom }}
+                        </a>
+                    </dd>
+                    
+                    <dt class="col-sm-3">Description :</dt>
+                    <dd class="col-sm-9">{{ produit.description|default('Aucune description')|nl2br }}</dd>
+                    
+                    <dt class="col-sm-3">Prix :</dt>
+                    <dd class="col-sm-9"><strong class="text-success">{{ produit.prix }}€</strong></dd>
+                    
+                    <dt class="col-sm-3">Stock :</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-{% if produit.stock > 10 %}success{% elseif produit.stock > 0 %}warning{% else %}danger{% endif %} fs-6">
+                            {{ produit.stock }} unité{{ produit.stock > 1 ? 's' : '' }}
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="bi bi-gear me-2"></i>Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ path('app_produit_edit', {'id': produit.id}) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil me-2"></i>Modifier ce produit
+                    </a>
+                    <form method="post" action="{{ path('app_produit_delete', {'id': produit.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+                        <button class="btn btn-danger w-100">
+                            <i class="bi bi-trash me-2"></i>Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Statistiques</h6>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Commandes :</strong> {{ produit.commandeProduits|length }}
+                </p>
+                <p class="card-text">
+                    <strong>Statut stock :</strong>
+                    {% if produit.stock > 10 %}
+                        <span class="text-success">En stock</span>
+                    {% elseif produit.stock > 0 %}
+                        <span class="text-warning">Stock faible</span>
+                    {% else %}
+                        <span class="text-danger">Rupture de stock</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

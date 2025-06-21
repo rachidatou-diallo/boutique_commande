@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commandes - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-cart-check me-2"></i>Commandes</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ path('app_commande_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Nouvelle commande
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if commandes %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Statut</th>
+                        <th width="200">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                    <tr>
+                        <td><strong>{{ commande.numero }}</strong></td>
+                        <td>{{ commande.user.fullName }}</td>
+                        <td>{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                        <td><strong>{{ commande.total }}€</strong></td>
+                        <td>
+                            <span class="badge bg-{% if commande.statut == 'livree' %}success{% elseif commande.statut == 'annulee' %}danger{% elseif commande.statut == 'expediee' %}info{% else %}warning{% endif %}">
+                                {{ commande.statutLabel }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" style="display: inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-4 text-muted"></i>
+            <h4 class="mt-3 text-muted">Aucune commande</h4>
+            <p class="text-muted">Commencez par créer votre première commande</p>
+            <a href="{{ path('app_commande_new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Créer une commande
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

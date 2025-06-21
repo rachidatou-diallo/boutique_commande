@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-speedometer2 me-2"></i>Tableau de bord</h1>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Catégories</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.categories }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-tags display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Produits</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.produits }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Commandes</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.commandes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-cart-check display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Utilisateurs</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.users }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+{% if is_granted('ROLE_ADMIN') %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-lightning me-2"></i>Actions rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ path('app_categorie_new') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Nouvelle catégorie
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ path('app_produit_new') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Nouveau produit
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ path('app_commande_new') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Nouvelle commande
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Commandes récentes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2"></i>Commandes récentes</h5>
+                {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_commande_index') }}" class="btn btn-sm btn-outline-primary">Voir toutes</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if recent_commandes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Numéro</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commande in recent_commandes %}
+                            <tr>
+                                <td>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="text-decoration-none">
+                                        {{ commande.numero }}
+                                    </a>
+                                    {% else %}
+                                        {{ commande.numero }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ commande.user.fullName }}</td>
+                                <td>{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                                <td>{{ commande.total }}€</td>
+                                <td>
+                                    <span class="badge bg-{% if commande.statut == 'livree' %}success{% elseif commande.statut == 'annulee' %}danger{% elseif commande.statut == 'expediee' %}info{% else %}warning{% endif %}">
+                                        {{ commande.statutLabel }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-cart-x display-4 text-muted"></i>
+                    <p class="text-muted mt-2">Aucune commande récente</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

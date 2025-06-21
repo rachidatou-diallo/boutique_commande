@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande {{ commande.numero }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-receipt me-2"></i>Commande {{ commande.numero }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil me-2"></i>Modifier
+            </a>
+            <a href="{{ path('app_commande_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations de la commande</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Numéro :</dt>
+                            <dd class="col-sm-8">{{ commande.numero }}</dd>
+                            
+                            <dt class="col-sm-4">Client :</dt>
+                            <dd class="col-sm-8">{{ commande.user.fullName }}</dd>
+                            
+                            <dt class="col-sm-4">Email :</dt>
+                            <dd class="col-sm-8">{{ commande.user.email }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Date :</dt>
+                            <dd class="col-sm-8">{{ commande.dateCommande|date('d/m/Y H:i') }}</dd>
+                            
+                            <dt class="col-sm-4">Statut :</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-{% if commande.statut == 'livree' %}success{% elseif commande.statut == 'annulee' %}danger{% elseif commande.statut == 'expediee' %}info{% else %}warning{% endif %} fs-6">
+                                    {{ commande.statutLabel }}
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Total :</dt>
+                            <dd class="col-sm-8"><strong class="text-success fs-5">{{ commande.total }}€</strong></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produits commandés -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Produits commandés</h5>
+            </div>
+            <div class="card-body">
+                {% if commande.commandeProduits %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix unitaire</th>
+                                <th>Quantité</th>
+                                <th>Sous-total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commandeProduit in commande.commandeProduits %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_produit_show', {'id': commandeProduit.produit.id}) }}" class="text-decoration-none">
+                                        {{ commandeProduit.produit.nom }}
+                                    </a>
+                                </td>
+                                <td>{{ commandeProduit.prixUnitaire }}€</td>
+                                <td>{{ commandeProduit.quantite }}</td>
+                                <td><strong>{{ commandeProduit.sousTotal }}€</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active">
+                                <th colspan="3">Total</th>
+                                <th>{{ commande.total }}€</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-cart-x display-4 text-muted"></i>
+                    <p class="text-muted mt-2">Aucun produit dans cette commande</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="bi bi-gear me-2"></i>Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil me-2"></i>Modifier cette commande
+                    </a>
+                    <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                        <button class="btn btn-danger w-100">
+                            <i class="bi bi-trash me-2"></i>Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Résumé</h6>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Nombre d'articles :</strong> {{ commande.commandeProduits|length }}
+                </p>
+                <p class="card-text">
+                    <strong>Quantité totale :</strong> 
+                    {% set totalQuantite = 0 %}
+                    {% for cp in commande.commandeProduits %}
+                        {% set totalQuantite = totalQuantite + cp.quantite %}
+                    {% endfor %}
+                    {{ totalQuantite }}
+                </p>
+                <hr>
+                <p class="card-text">
+                    <strong>Montant total :</strong><br>
+                    <span class="fs-4 text-success">{{ commande.total }}€</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
